@@ -1,0 +1,93 @@
+name: self-update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: self-update-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Discover upstream
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          upstream="$(gh api "repos/$REPO" --jq '.parent.full_name // empty')"
+          if [[ -z "$upstream" ]]; then
+            echo "::error::This repository is not a fork; no upstream parent was found."
+            exit 1
+          fi
+
+          upstream_branch="$(gh api "repos/$upstream" --jq '.default_branch')"
+          target_branch="$(gh api "repos/$REPO" --jq '.default_branch')"
+
+          if [[ -z "$upstream_branch" || -z "$target_branch" ]]; then
+            echo "::error::Could not determine the default branch."
+            exit 1
+          fi
+
+          {
+            echo "repository=$upstream"
+            echo "branch=$upstream_branch"
+            echo "target_branch=$target_branch"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout fork default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          token: ${{ github.token }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream
+        env:
+          UPSTREAM_REPOSITORY: ${{ steps.upstream.outputs.repository }}
+          UPSTREAM_BRANCH: ${{ steps.upstream.outputs.branch }}
+        run: |
+          set -euo pipefail
+
+          git remote add upstream "https://github.com/${UPSTREAM_REPOSITORY}.git"
+          git fetch --no-tags upstream \
+            "refs/heads/${UPSTREAM_BRANCH}:refs/remotes/upstream/${UPSTREAM_BRANCH}"
+
+      - name: Rebase fork default branch
+        env:
+          UPSTREAM_BRANCH: ${{ steps.upstream.outputs.branch }}
+          TARGET_BRANCH: ${{ steps.upstream.outputs.target_branch }}
+        run: |
+          set -euo pipefail
+
+          current_branch="$(git branch --show-current)"
+          if [[ "$current_branch" != "$TARGET_BRANCH" ]]; then
+            echo "::error::Expected checked-out branch '$TARGET_BRANCH', got '$current_branch'."
+            exit 1
+          fi
+
+          git rebase "refs/remotes/upstream/${UPSTREAM_BRANCH}"
+
+      - name: Push updated default branch
+        env:
+          TARGET_BRANCH: ${{ steps.upstream.outputs.target_branch }}
+        run: |
+          set -euo pipefail
+          git push --force-with-lease origin "HEAD:refs/heads/${TARGET_BRANCH}"
