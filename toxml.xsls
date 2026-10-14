@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<expr>
+  <list>
+    <attrs>
+      <attr name="path">
+        <string value="/bugtracker" />
+      </attr>
+      <attr name="war">
+        <path value="/nix/store/d1jh9pasa7k2...-jira/lib/atlassian-jira.war" />
+      </attr>
+    </attrs>
+    <attrs>
+      <attr name="path">
+        <string value="/wiki" />
+      </attr>
+      <attr name="war">
+        <path value="/nix/store/y6423b1yi4sx...-uberwiki/uberwiki.war" />
+      </attr>
+    </attrs>
+  </list>
+</expr>
