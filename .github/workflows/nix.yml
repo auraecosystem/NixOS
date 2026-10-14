@@ -24,7 +24,7 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Check formatting
-        run: nix fmt -- --check
+        run: nix run .#formatter.x86_64-linux -- --check flake.nix modules/base.nix tests/module-evaluation.nix
 
       - name: Evaluate flake and run checks
         run: nix flake check --show-trace
