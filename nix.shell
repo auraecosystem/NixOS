@@ -1,0 +1,2 @@
+sudo mkdir /boot.bak && sudo mv /boot/* /boot.bak &&
+sudo NIXOS_INSTALL_BOOTLOADER=1 /nix/var/nix/profiles/system/bin/switch-to-configuration boot
