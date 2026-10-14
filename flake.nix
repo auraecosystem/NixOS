@@ -10,10 +10,10 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
-      nixosModules.base = import ./modules/base.nix;
-      nixosModules.default = self.nixosModules.base;
+      nixosModules.core = import ./Modules/core/default.nix;
+      nixosModules.default = import ./Modules/default.nix;
 
-      checks.${system}.module-evaluation = import ./tests/module-evaluation.nix {
+      checks.${system}.module-evaluation = import ./tests/evaluation/default.nix {
         inherit nixpkgs system;
       };
 
