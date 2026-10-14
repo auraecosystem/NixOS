@@ -1,3 +1,4 @@
+sudo nixos-rebuild switch
 sudo NIXOS_INSTALL_BOOTLOADER=1 /nix/var/nix/profiles/system/bin/switch-to-configuration boot
 mkdir root
 mount /dev/sdaX root
