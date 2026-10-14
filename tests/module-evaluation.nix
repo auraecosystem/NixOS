@@ -15,9 +15,9 @@ let
     ];
   };
 
-  hasGit = builtins.any
-    (package: (package.pname or "") == "git")
-    evaluated.config.environment.systemPackages;
+  hasGit = builtins.any (
+    package: (package.pname or "") == "git"
+  ) evaluated.config.environment.systemPackages;
 
 in
 assert evaluated.config.networking.hostName == "nixos-ci";
