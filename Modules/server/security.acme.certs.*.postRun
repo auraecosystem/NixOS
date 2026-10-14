@@ -1,0 +1,11 @@
+security.acme.certs.${domainName}.postRun = ''
+  # set permission on dir
+  ${pkgs.acl}/bin/setfacl -m \
+  u:nginx:rx,u:turnserver:rx,u:prosody:rx,u:dovecot2:rx,u:postfix:rx \
+  /var/lib/acme/${domainName}
+
+  # set permission on key file
+  ${pkgs.acl}/bin/setfacl -m \
+  u:nginx:r,u:turnserver:r,u:prosody:r,u:dovecot2:r,u:postfix:r \
+  /var/lib/acme/${domainName}/*.pem
+'';
