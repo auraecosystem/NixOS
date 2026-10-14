@@ -1,0 +1,12 @@
+# Nix build outputs
+/result
+/result-*
+
+# Local Nix state
+.direnv/
+.envrc.local
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
